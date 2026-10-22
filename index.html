@@ -9,8 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
-    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
-    <script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
     <style>
       :root {
         --bg: #eef0f3;
@@ -950,19 +950,29 @@
           if (typeof FFmpegWASM === "undefined" || typeof FFmpegUtil === "undefined") {
             return Promise.reject(new Error("Không tải được thư viện cắt video (ffmpeg). Kiểm tra mạng rồi thử lại."));
           }
-          ff = new FFmpegWASM.FFmpeg();
-          ff.on("progress", function (e) { currentSegProgress = e.progress || 0; if (statusCb) statusCb(); });
-          var base = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
-          ffLoading = Promise.all([
-            FFmpegUtil.toBlobURL(base + "/ffmpeg-core.js", "text/javascript"),
-            FFmpegUtil.toBlobURL(base + "/ffmpeg-core.wasm", "application/wasm")
-          ]).then(function (urls) {
-            return ff.load({ coreURL: urls[0], wasmURL: urls[1] });
-          }).then(function () {
+          var bases = [
+            "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd",
+            "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd"
+          ];
+          function attempt(idx) {
+            ff = new FFmpegWASM.FFmpeg();
+            ff.on("progress", function (e) { currentSegProgress = e.progress || 0; if (statusCb) statusCb(); });
+            var base = bases[idx];
+            return Promise.all([
+              FFmpegUtil.toBlobURL(base + "/ffmpeg-core.js", "text/javascript"),
+              FFmpegUtil.toBlobURL(base + "/ffmpeg-core.wasm", "application/wasm")
+            ]).then(function (urls) {
+              return ff.load({ coreURL: urls[0], wasmURL: urls[1] });
+            }).catch(function (err) {
+              if (idx + 1 < bases.length) return attempt(idx + 1);
+              throw err;
+            });
+          }
+          ffLoading = attempt(0).then(function () {
             ffLoaded = true;
             return ff;
           })
-          .catch(function (err) { ffLoading = null; throw err; });
+          .catch(function (err) { ffLoading = null; throw new Error("Không tải được bộ cắt video (ffmpeg core). Kiểm tra mạng rồi thử lại. (" + (err && err.message ? err.message : err) + ")"); });
           return ffLoading;
         }
 
