@@ -954,15 +954,20 @@
             "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd",
             "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd"
           ];
+          var workerBases = [
+            "https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd",
+            "https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd"
+          ];
           function attempt(idx) {
             ff = new FFmpegWASM.FFmpeg();
             ff.on("progress", function (e) { currentSegProgress = e.progress || 0; if (statusCb) statusCb(); });
             var base = bases[idx];
             return Promise.all([
               FFmpegUtil.toBlobURL(base + "/ffmpeg-core.js", "text/javascript"),
-              FFmpegUtil.toBlobURL(base + "/ffmpeg-core.wasm", "application/wasm")
+              FFmpegUtil.toBlobURL(base + "/ffmpeg-core.wasm", "application/wasm"),
+              FFmpegUtil.toBlobURL(workerBases[idx] + "/814.ffmpeg.js", "text/javascript")
             ]).then(function (urls) {
-              return ff.load({ coreURL: urls[0], wasmURL: urls[1] });
+              return ff.load({ coreURL: urls[0], wasmURL: urls[1], classWorkerURL: urls[2] });
             }).catch(function (err) {
               if (idx + 1 < bases.length) return attempt(idx + 1);
               throw err;
