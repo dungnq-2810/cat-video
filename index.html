@@ -452,8 +452,7 @@
                 <div class="opt-row">
                   <div class="txt"><b>Chế độ cắt</b><small>Nhanh = sao chép nguyên luồng, xong trong vài giây. Chính xác = mã hoá lại, điểm cắt khớp từng khung hình nhưng chậm hơn</small></div>
                   <select class="sel" id="optMode">
-                    <option value="fast" selected>Nhanh</option>
-                    <option value="accurate">Chính xác</option>
+                    <option value="accurate" selected>Chính xác (mã hoá lại, cắt đúng đoạn)</option>
                   </select>
                 </div>
               </div>
@@ -1023,7 +1022,7 @@
                   args = args.concat(["-c", "copy"]);
                   if (mute) args.push("-an");
                 }
-                args = args.concat(["-avoid_negative_ts", "make_zero", "-movflags", "+faststart", out]);
+                args = args.concat(["-movflags", "+faststart", out]);
                 return ff.exec(args).then(function (code) {
                   if (code !== 0) throw new Error("ffmpeg lỗi khi cắt phần " + (segIdx + 1) + " (mã " + code + "). Thử đổi sang chế độ cắt Chính xác.");
                   return ff.readFile(out);
