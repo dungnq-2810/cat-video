@@ -951,8 +951,8 @@
             return Promise.reject(new Error("Không tải được thư viện cắt video (ffmpeg). Kiểm tra mạng rồi thử lại."));
           }
           var bases = [
-            "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd",
-            "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd"
+            "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm",
+            "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm"
           ];
           var workerBases = [
             "https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd",
